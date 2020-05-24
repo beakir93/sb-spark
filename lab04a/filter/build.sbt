@@ -1,6 +1,6 @@
-name := "lab04"
+name := "filter"
 
-version := "0.1"
+version := "1.0"
 
 scalaVersion := "2.11.12"
 
@@ -12,6 +12,5 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.1" % "test"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "2.4.5",
   "org.apache.spark" %% "spark-core" % "2.4.5",
-  "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.3.4" % "provided"
+  "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.5" % "provided"
 )
-

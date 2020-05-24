@@ -11,11 +11,11 @@ object filter {
     import java.util.{Calendar, Date}
     //Create a SparkContext to initialize Spark
     val conf = new SparkConf()
-                              .setAppName("lab04")
+      .setAppName("lab04")
 
     val sparkSession = SparkSession.builder()
-                                    .config(conf=conf)
-                                    .getOrCreate()
+      .config(conf=conf)
+      .getOrCreate()
 
     var sc = sparkSession.sparkContext
     println("SparkContext started".toUpperCase)
@@ -34,57 +34,57 @@ object filter {
     val outPutPath = new Path(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/")
 
     if (fs.exists(outPutPath))
-        fs.delete(outPutPath, true)
+      fs.delete(outPutPath, true)
 
     System.out.println("Dropped table".toUpperCase)
 
     val df = sparkSession
-                          .read
-                          .format("kafka")
-                          .option("kafka.bootstrap.servers", "10.0.1.13:6667")
-                          .option("subscribe", topic_name)
-                          .option("startingOffsets", offset)
-                          .option("consumer_timeout_ms", 30000)
-                          .load()
-                          .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-                          //.as[(String, String)]
+      .read
+      .format("kafka")
+      .option("kafka.bootstrap.servers", "10.0.1.13:6667")
+      .option("subscribe", topic_name)
+      .option("startingOffsets", offset)
+      .option("consumer_timeout_ms", 30000)
+      .load()
+      .selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
+    //.as[(String, String)]
 
     val schema = new StructType()
-                          .add("event_type",StringType)
-                          .add("category",StringType)
-                          .add("item_id",StringType)
-                          .add("item_price",FloatType)
-                          .add("uid",StringType)
-                          .add("timestamp",StringType)
+      .add("event_type",StringType)
+      .add("category",StringType)
+      .add("item_id",StringType)
+      .add("item_price",FloatType)
+      .add("uid",StringType)
+      .add("timestamp",StringType)
 
     val df_parse = df
-                    .select(from_json(col("value"), schema).as("data"))
-                    .select("data.*")
+      .select(from_json(col("value"), schema).as("data"))
+      .select("data.*")
     df_parse.show(1)
 
     val today = new SimpleDateFormat("yMMdd").format(Calendar.getInstance().getTime())
     System.out.println("Today date: " + today)
 
     val buy_df = df_parse
-                        .filter(col("event_type") === "buy")
-                        .withColumn("date", lit(today))
+      .filter(col("event_type") === "buy")
+      .withColumn("date", lit(today))
     buy_df.show(3)
 
     buy_df
-          .write
-          .mode("overwrite")
-          .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/buy_$today")
+      .write
+      .mode("overwrite")
+      .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/buy_$today")
 
     System.out.println("Writing buy table".toUpperCase)
 
     val view_df = df_parse
-                          .filter(col("event_type") === "view")
+      .filter(col("event_type") === "view")
     view_df.show(3)
 
     view_df
-          .write
-          .mode("overwrite")
-          .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/view_$today")
+      .write
+      .mode("overwrite")
+      .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/view_$today")
 
     System.out.println("Writing view table".toUpperCase)
 
