@@ -1,1 +1,0 @@
-["sbt.Task[scala.collection.immutable.Map[java.lang.String, scala.collection.Seq[scala.Tuple2[java.nio.file.Path, sbt.nio.FileStamp]]]]",{"2.11.12":{"hashes":[["/Users/mandarinka/Documents/git/sb-spark/lab04a/filter/src/main/scala/filter.scala","aaee2c35baf926dfd658ceeb4b3a55d76e54c1b9"]],"lastModifiedTimes":[]}}]

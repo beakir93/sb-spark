@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f8460bc1-9bcd-4985-b8bf-8f5f1460fc9b" name="spark-de-master1">
+        <fileTransfer rootFolder="/data/home/kirill.likhouzov" accessType="SFTP" host="spark-de-master1.newprolab.com" port="22" sshConfigId="25d69df2-6c1d-43c8-99e4-af29a50e42ed" sshConfig="kirill.likhouzov@spark-de-master1.newprolab.com:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

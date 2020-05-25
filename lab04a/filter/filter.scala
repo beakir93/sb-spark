@@ -31,7 +31,7 @@ object filter {
 
     val fs = FileSystem.get(sc.hadoopConfiguration)
 
-    val outPutPath = new Path(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/")
+    val outPutPath = new Path(s"$output_dir_prefix/")
 
     if (fs.exists(outPutPath))
       fs.delete(outPutPath, true)
@@ -73,7 +73,7 @@ object filter {
     buy_df
       .write
       .mode("overwrite")
-      .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/buy_$today")
+      .parquet(s"$output_dir_prefix/buy_$today")
 
     System.out.println("Writing buy table".toUpperCase)
 
@@ -84,7 +84,7 @@ object filter {
     view_df
       .write
       .mode("overwrite")
-      .parquet(s"hdfs:///user/kirill.likhouzov/$output_dir_prefix/view_$today")
+      .parquet(s"$output_dir_prefix/view_$today")
 
     System.out.println("Writing view table".toUpperCase)
 

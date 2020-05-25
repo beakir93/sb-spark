@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="spark-de-master1.newprolab.com" id="25d69df2-6c1d-43c8-99e4-af29a50e42ed" keyPath="$USER_HOME$/.ssh/npl.pem" port="22" nameFormat="DESCRIPTIVE" username="kirill.likhouzov" />
+    </configs>
+  </component>
+</project>
