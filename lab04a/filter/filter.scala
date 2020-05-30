@@ -23,7 +23,7 @@ object filter {
     println("SparkContext started".toUpperCase)
 
     val topic_name = sc.getConf.get("spark.filter.topic_name")
-    val offset = sc.getConf.get("spark.filter.offset")
+    var offset = sc.getConf.get("spark.filter.offset")
     val output_dir_prefix = sc.getConf.get("spark.filter.output_dir_prefix")
 
     println("topic_name: " + topic_name)
@@ -40,6 +40,15 @@ object filter {
     val today = new SimpleDateFormat("yMMdd").format(Calendar.getInstance().getTime())
     System.out.println("Today date: " + today)
 
+    if (offset != "earliest" && offset != "latest") {
+      offset = s"""{"$topic_name":{"0":$offset}}"""
+    }
+    else if (offset == "latest") {
+      //TODO: у Артема в задании косяк, стартовый оффсет не может быть latest в батче
+      offset = "earliest"
+    }
+    System.out.println("offset: " + offset)
+
     /****************************************************************************************/
     /*                                     logics                                           */
     /****************************************************************************************/
@@ -48,15 +57,15 @@ object filter {
       .format("kafka")
       .option("kafka.bootstrap.servers", "10.0.1.13:6667")
       .option("subscribe", topic_name)
-      .option("startingOffsets", s"""{"$topic_name":{"0":$offset}}""")
-      .option("endingOffsets", s"""{"$topic_name":{"0":-1}}""")
+      .option("startingOffsets", offset)
+      .option("endingOffsets", "latest")
       .option("consumer_timeout_ms", 30000)
       .load()
       .select(col("value").cast("String"))
       .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
         .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
       .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
-        .repartition(1)
+      .repartition(1)
 
     df.show(3)
     val df_cnt = df.count()
@@ -69,15 +78,13 @@ object filter {
     //  .withColumn("date", date_format(to_date(from_unixtime(col("timestamp") / 1000)), "yyyyMMdd"))
 
     val dt = df.select("date").distinct().collect().map(_(0))
-
+    //TODO: точно ли надо делать так, или через partitionBy
     for( x <- dt ){
       println(x)
 
       val dfdt= df
         .filter(col("date") === x)
         .cache()
-
-      //dfdt.rdd.saveAsTextFile(s"$output_dir_prefix/buy_$x")
 
       dfdt
         .filter(col("event_type") === "buy")
