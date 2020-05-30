@@ -48,7 +48,7 @@ object filter {
       .format("kafka")
       .option("kafka.bootstrap.servers", "10.0.1.13:6667")
       .option("subscribe", topic_name)
-      .option("startingOffsets", offset)
+      .option("startingOffsets", s"""{"$topic_name":{"0":$offset}}""")
       .option("consumer_timeout_ms", 30000)
       .load()
       .select(col("value").cast("String"))
@@ -56,7 +56,7 @@ object filter {
         .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
       .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
         .repartition(100)
-    
+
     df.show(3)
     val df_cnt = df.count()
     System.out.println(s"Count: $df_cnt")
