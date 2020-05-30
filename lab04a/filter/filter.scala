@@ -44,17 +44,19 @@ object filter {
     /*                                     logics                                           */
     /****************************************************************************************/
     val df = sparkSession
-              .read
-              .format("kafka")
-              .option("kafka.bootstrap.servers", "10.0.1.13:6667")
-              .option("subscribe", topic_name)
-              .option("auto.offset.reset", offset)
-              .option("consumer_timeout_ms", 30000)
-              .load()
-              .select(col("value").cast("String"))
-              .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
-                .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
-              .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
+      .read
+      .format("kafka")
+      .option("kafka.bootstrap.servers", "10.0.1.13:6667")
+      .option("subscribe", topic_name)
+      .option("startingOffsets", offset)
+      .option("consumer_timeout_ms", 30000)
+      .load()
+      .select(col("value").cast("String"))
+      .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
+        .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
+      .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
+        .repartition(100)
+    
     df.show(3)
     val df_cnt = df.count()
     System.out.println(s"Count: $df_cnt")
@@ -79,11 +81,13 @@ object filter {
       dfdt
         .filter(col("event_type") === "buy")
         .write
+        .mode("overwrite")
         .json(s"$output_dir_prefix/buy_$x")
 
       dfdt
         .filter(col("event_type") === "view")
         .write
+        .mode("overwrite")
         .json(s"$output_dir_prefix/view_$x")
 
     }
@@ -94,55 +98,3 @@ object filter {
 
   }
 }
-
-
-
-/*
-     val buy_df =
-
-       sparkSession
-                     .readStream
-                     .format("kafka")
-                     .option("kafka.bootstrap.servers", "10.0.1.13:6667")
-                     .option("subscribe", topic_name)
-                     .option("Offsets", offset)
-                     .option("consumer_timeout_ms", 30000)
-                     .load()
-                     .select(col("value").cast("String"))
-                     .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
-                       .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
-                     .withColumn("date", lit(today))
-
-                     .filter(col("event_type") === "buy")
-       //.show(3)
-                     //.write
-                     //.mode("overwrite")
-                     //.parquet(s"$output_dir_prefix/buy_$today")
-
-   val consoleOutput = buy_df.writeStream
-                         .outputMode("append")
-                         .format("console")
-                         .start()
-   consoleOutput.awaitTermination()
-
-   System.out.println("Writing buy table".toUpperCase)
-
-   val view_df = sparkSession
-                     .read
-                     .format("kafka")
-                     .option("kafka.bootstrap.servers", "10.0.1.13:6667")
-                     .option("subscribe", topic_name)
-                     .option("Offsets", offset)
-                     .option("consumer_timeout_ms", 30000)
-                     .load()
-                     .select(col("value").cast("String"))
-                     .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
-                       .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
-                     .withColumn("date", lit(today))
-
-                     .filter(col("event_type") === "view")
-                     .write
-                     .mode("overwrite")
-                     .parquet(s"$output_dir_prefix/view_$today")*/
-
-//view_df.show(3)
