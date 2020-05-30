@@ -56,7 +56,7 @@ object filter {
       .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
         .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
       .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
-        .repartition(100)
+        .repartition(1)
 
     df.show(3)
     val df_cnt = df.count()
