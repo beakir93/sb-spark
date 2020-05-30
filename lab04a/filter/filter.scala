@@ -48,7 +48,7 @@ object filter {
               .format("kafka")
               .option("kafka.bootstrap.servers", "10.0.1.13:6667")
               .option("subscribe", topic_name)
-              .option("offsets", offset)
+              .option("auto.offset.reset", offset)
               .option("consumer_timeout_ms", 30000)
               .load()
               .select(col("value").cast("String"))
