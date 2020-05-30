@@ -3,6 +3,7 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig host="spark-de-master1.newprolab.com" id="25d69df2-6c1d-43c8-99e4-af29a50e42ed" keyPath="$USER_HOME$/.ssh/npl.pem" port="22" nameFormat="DESCRIPTIVE" username="kirill.likhouzov" />
+      <sshConfig host="spark-de-master2.newprolab.com" id="3072ebe4-a450-403a-8368-fc64b43fcec6" keyPath="$USER_HOME$/.ssh/npl.pem" port="22" nameFormat="DESCRIPTIVE" username="kirill.likhouzov" />
     </configs>
   </component>
 </project>

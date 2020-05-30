@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="4a228bca-e5ec-465e-9685-d9cf654ee99a" name="spark-de-master2">
+        <fileTransfer rootFolder="/data/home/kirill.likhouzov" accessType="SFTP" host="spark-de-master2.newprolab.com" port="22" sshConfigId="3072ebe4-a450-403a-8368-fc64b43fcec6" sshConfig="kirill.likhouzov@spark-de-master2.newprolab.com:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
