@@ -52,12 +52,13 @@ object agg {
                     / sum(when(col("event_type") === "buy", 1).otherwise(0))).as("aov")
       )
       .withColumn("start_ts_tms", unix_timestamp(col("start_dt")))
+      //TODO: зачем ровно час?
       .withColumn("start_ts_1h_tms", unix_timestamp(col("start_dt") + expr("INTERVAL 1 HOURS")))
       .select(col("start_ts_tms").as("start_ts")
               ,col("start_ts_1h_tms").as("end_ts")
               //,col("start_dt")
               //,col("end_dt")
-              ,col("revenue")
+              ,col("revenue").cast("int") //TODO: нужен ли int?
               ,col("visitors")
               ,col("purchases")
               ,col("aov")
@@ -69,7 +70,7 @@ object agg {
       .option("truncate", false)*/
       .format("kafka")
       .option("kafka.bootstrap.servers", "10.0.1.13:6667")
-      .option("subscribe", "kirill_likhouzov_lab04b_out")
+      .option("topic", "kirill_likhouzov_lab04b_out")
       .outputMode("update")
       .option("checkpointLocation", "/user/kirill.likhouzov/laba04b/checkpoint")
       .start
