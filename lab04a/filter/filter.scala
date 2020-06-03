@@ -65,18 +65,33 @@ object filter {
       .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
         .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
       .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
+      .withColumn("date_part", col("date"))
       .repartition(1)
 
     df.show(3)
     val df_cnt = df.count()
     System.out.println(s"Count: $df_cnt")
 
+    df
+        .filter(col("event_type") === "view")
+        .write
+        .mode("overwrite")
+        .partitionBy("date_part")
+        .json(s"$output_dir_prefix/view")
 
+    df
+      .filter(col("event_type") === "buy")
+      .write
+      .mode("overwrite")
+      .partitionBy("date_part")
+      .json(s"$output_dir_prefix/buy")
 
 
     //val df= sparkSession.read.json("/labs/laba04/visits-g")
     //  .withColumn("date", date_format(to_date(from_unixtime(col("timestamp") / 1000)), "yyyyMMdd"))
 
+    /*
+    Без partitionBy
     val dt = df.select("date").distinct().collect().map(_(0))
     //TODO: точно ли надо делать так, или через partitionBy
     for( x <- dt ){
@@ -99,7 +114,7 @@ object filter {
         .json(s"$output_dir_prefix/view_$x")
 
     }
-
+    */
     System.out.println("Writing view table".toUpperCase)
 
     sc.stop()
