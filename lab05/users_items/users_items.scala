@@ -4,7 +4,7 @@ object users_items {
     import org.apache.spark.sql.{SparkSession, SQLContext}
     import org.apache.spark.sql.types._
     import org.apache.spark.sql.functions._
-
+    import sys.process._
     import org.apache.hadoop.fs.{FileSystem, Path}
 
     import java.text.SimpleDateFormat
@@ -79,6 +79,11 @@ object users_items {
 
     if (update_mode.toInt == 1) {
       System.out.println("update_mode == 1")
+      System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/".!!)
+      System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items".!!)
+      System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items/20200429".!!)
+      System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items/20200430".!!)
+
       val users_items_old = sparkSession
                     .read
                     .parquet(s"$output_dir/20200429")
