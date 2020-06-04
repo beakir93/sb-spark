@@ -64,6 +64,7 @@ object users_items {
                     .collect
                     .map(x => x(0))
     val dt_max = dt_max_arr(0)
+    System.out.println("dt_max: " + dt_max)
 
     val df_pvt= df_buy_view
         .withColumn("item_type", when(col("event_type") === "buy",
@@ -74,16 +75,20 @@ object users_items {
         .count
         .repartition(1)
 
+    df_pvt.show(3)
+
     if (update_mode == 1) {
       val users_items_old = sparkSession
                     .read
                     .parquet(s"$output_dir/20200429")
+
+      users_items_old.show(3)
                     //TODO: заменить хардкод даты пути на чтение папок из hdfs
       df_pvt
                     .union(users_items_old)
                     .na.fill(0)
                     .write
-                    .mode("overwrite")
+                    .mode("append")
                     .parquet(s"$output_dir/$dt_max")
     }
     else {
