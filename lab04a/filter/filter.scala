@@ -13,6 +13,9 @@ object filter {
     val conf = new SparkConf()
       .setAppName("lab04a")
 
+    conf.set("spark.sql.session.timeZone", "UTC")
+
+
     val sparkSession = SparkSession.builder()
       .config(conf=conf)
       .getOrCreate()
@@ -65,7 +68,8 @@ object filter {
       .select(json_tuple(col("value"), "event_type", "category", "item_id", "item_price", "uid", "timestamp")
         .as(List("event_type", "category", "item_id", "item_price", "uid", "timestamp")))
       //.withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
-      .withColumn("date", date_format(to_date(to_utc_timestamp(from_unixtime(col("timestamp")/1000), "GMT+03:00")), "yyyyMMdd"))
+      //.withColumn("date", date_format(to_date(to_utc_timestamp(from_unixtime(col("timestamp")/1000), "GMT+03:00")), "yyyyMMdd"))
+      .withColumn("date", date_format(to_date(from_unixtime(col("timestamp")/1000)), "yyyyMMdd"))
       .withColumn("date_part", col("date"))
       .repartition(1)
 

@@ -13,6 +13,8 @@ object users_items {
     val conf = new SparkConf()
       .setAppName("lab05")
 
+    conf.set("spark.sql.session.timeZone", "UTC")
+
     val sparkSession = SparkSession.builder()
       .config(conf=conf)
       .getOrCreate()
