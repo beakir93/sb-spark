@@ -75,9 +75,9 @@ object users_items {
         .count
         .repartition(1)
 
-    df_pvt.show(3)
+    //df_pvt.show(3)
 
-    if (update_mode == 1) {
+    if (update_mode.toInt == 1) {
       System.out.println("update_mode == 1")
       val users_items_old = sparkSession
                     .read
@@ -89,7 +89,7 @@ object users_items {
                     .union(users_items_old)
                     .na.fill(0)
                     .write
-                    .mode("append")
+                    .mode("overwrite")
                     .parquet(s"$output_dir/$dt_max")
     }
     else {
