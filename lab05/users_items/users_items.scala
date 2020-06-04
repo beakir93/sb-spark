@@ -78,6 +78,7 @@ object users_items {
     df_pvt.show(3)
 
     if (update_mode == 1) {
+      System.out.println("update_mode == 1")
       val users_items_old = sparkSession
                     .read
                     .parquet(s"$output_dir/20200429")
