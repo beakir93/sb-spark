@@ -22,9 +22,9 @@ object users_items {
 
     println("SparkContext started".toUpperCase)
 
-    val update_mode = sc.getConf.get("spark.user_items.update")
-    val output_dir = sc.getConf.get("spark.user_items.output_dir")
-    val input_dir = sc.getConf.get("spark.user_items.input_dir")
+    val update_mode = sc.getConf.get("spark.users_items.update")
+    val output_dir = sc.getConf.get("spark.users_items.output_dir")
+    val input_dir = sc.getConf.get("spark.users_items.input_dir")
 
     println(s"update_mode: " + update_mode)
     System.out.println(s"output_dtr: $output_dir".toUpperCase)
