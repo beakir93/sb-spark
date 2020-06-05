@@ -8,7 +8,7 @@ val conf = new SparkConf().setAppName("lab3")
                             .setAll(Map("spark.cassandra.connection.host" -> "10.0.5.13",
                                         "spark.cassandra.connection.port" -> "9042",
                                         "spark.cassandra.auth.username" -> "kirill_likhouzov",
-                                        "spark.cassandra.auth.password" -> "kCh1wyOM"))
+                                        "spark.cassandra.auth.password" -> ""))
 
 val sparkSession = SparkSession.builder()
   .config(conf=conf)
@@ -38,7 +38,7 @@ val domain_cats = spark
                     .option("url", "jdbc:postgresql://10.0.5.13:5432/labdata")
                     .option("dbtable", "domain_cats")
                     .option("user", "kirill_likhouzov")
-                    .option("password", "kCh1wyOM")
+                    .option("password", "")
                     .option("driver", "org.postgresql.Driver")
                     .load()
                     .repartition(1)
@@ -190,7 +190,7 @@ res
     .option("url", "jdbc:postgresql://10.0.5.13:5432/kirill_likhouzov")
     .option("dbtable", "clients")
     .option("user", "kirill_likhouzov")
-    .option("password", "kCh1wyOM")
+    .option("password", "")
     .option("driver", "org.postgresql.Driver")
     .save()
 
@@ -199,7 +199,7 @@ sc.stop()
 /* 
 spark-shell --driver-class-path /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar --jars /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar
 
-val jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://10.0.5.13:5432/labdata").option("dbtable", "domain_cats").option("user", "kirill_likhouzov").option("password", "kCh1wyOM").load()
+val jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://10.0.5.13:5432/labdata").option("dbtable", "domain_cats").option("user", "kirill_likhouzov").option("password", "").load()
 
 jdbcDF.write.format("orc").save("domain_cats.orc")
 
