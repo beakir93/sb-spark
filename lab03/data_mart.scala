@@ -11,8 +11,13 @@ val conf = new SparkConf()
                             .setAppName("lab3")
                             .setAll(Map("spark.cassandra.connection.host" -> "10.0.1.9",
                                         "spark.cassandra.connection.port" -> "9042",
+<<<<<<< HEAD
                                         "spark.cassandra.auth.username" -> username,
                                         "spark.cassandra.auth.password" -> password))
+=======
+                                        "spark.cassandra.auth.username" -> "kirill_likhouzov",
+                                        "spark.cassandra.auth.password" -> ""))
+>>>>>>> f8293ab34d4b1d3970c7aba39c9e76952798238f
 
 val sparkSession = SparkSession.builder()
                                   .config(conf=conf)
@@ -40,8 +45,13 @@ val domain_cats = spark
                     .format("jdbc")
                     .option("url", "jdbc:postgresql://10.0.1.9:5432/labdata")
                     .option("dbtable", "domain_cats")
+<<<<<<< HEAD
                     .option("user", username)
                     .option("password", password)
+=======
+                    .option("user", "kirill_likhouzov")
+                    .option("password", "")
+>>>>>>> f8293ab34d4b1d3970c7aba39c9e76952798238f
                     .option("driver", "org.postgresql.Driver")
                     .load()
                     .repartition(1)
@@ -183,14 +193,38 @@ res
     .format("jdbc")
     .option("url", s"jdbc:postgresql://10.0.1.9:5432/$username")
     .option("dbtable", "clients")
+<<<<<<< HEAD
     .option("user", username)
     .option("password", password)
+=======
+    .option("user", "kirill_likhouzov")
+    .option("password", "")
+>>>>>>> f8293ab34d4b1d3970c7aba39c9e76952798238f
     .option("driver", "org.postgresql.Driver")
     .save()
 
 //check
 res.filter($"uid" === "d50192e5-c44e-4ae8-ae7a-7cfe67c8b777").show(3, 1000, true)
 
+<<<<<<< HEAD
 sc.stop()
+=======
+/* 
+spark-shell --driver-class-path /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar --jars /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar
+
+val jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://10.0.5.13:5432/labdata").option("dbtable", "domain_cats").option("user", "kirill_likhouzov").option("password", "").load()
+
+jdbcDF.write.format("orc").save("domain_cats.orc")
+
+val domain_cats = sqlContext.read.format("orc").load("/user/kirill.likhouzov/domain_cats.orc")
+/*
+
+/*
+spark-shell --driver-class-path /data/home/kirill.likhouzov/Drivers/elasticsearch-spark-20_2.11-7.6.2.jar --jars /data/home/kirill.likhouzov/Drivers/elasticsearch-spark-20_2.11-7.6.2.jar
+
+val visits = spark.read.format("org.elasticsearch.spark.sql").option("es.nodes.wan.only","true").option("es.nodes", "10.0.5.13").option("es.port", "9200").load("visits")
+
+visits.write.format("orc").save("visits.orc")
+>>>>>>> f8293ab34d4b1d3970c7aba39c9e76952798238f
 
 //GRANT SELECT ON TABLE clients TO PUBLIC;
