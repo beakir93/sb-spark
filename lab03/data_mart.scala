@@ -1,19 +1,22 @@
 
+val username = ""
+val password = ""
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.sql.functions._
 
-val conf = new SparkConf().setAppName("lab3")
-                            .setAll(Map("spark.cassandra.connection.host" -> "10.0.5.13",
+val conf = new SparkConf()
+                            .setAppName("lab3")
+                            .setAll(Map("spark.cassandra.connection.host" -> "10.0.1.9",
                                         "spark.cassandra.connection.port" -> "9042",
-                                        "spark.cassandra.auth.username" -> "kirill_likhouzov",
-                                        "spark.cassandra.auth.password" -> "kCh1wyOM"))
+                                        "spark.cassandra.auth.username" -> username,
+                                        "spark.cassandra.auth.password" -> password))
 
 val sparkSession = SparkSession.builder()
-  .config(conf=conf)
-  //.enableHiveSupport()
-  .getOrCreate()
+                                  .config(conf=conf)
+                                  .getOrCreate()
 
 var sc = sparkSession.sparkContext
 val sqlContext = new SQLContext(sc)
@@ -24,7 +27,7 @@ val sqlContext = new SQLContext(sc)
 
 val weblogs = spark
                 .read
-                .json("/labs/laba03/weblogs.json")
+                .parquet("/labs/laba03/weblogs.parquet")
                 .repartition(1)
                 .cache()
 
@@ -35,10 +38,10 @@ weblogs.show(1, 1000, true)
 val domain_cats = spark
                     .read
                     .format("jdbc")
-                    .option("url", "jdbc:postgresql://10.0.5.13:5432/labdata")
+                    .option("url", "jdbc:postgresql://10.0.1.9:5432/labdata")
                     .option("dbtable", "domain_cats")
-                    .option("user", "kirill_likhouzov")
-                    .option("password", "kCh1wyOM")
+                    .option("user", username)
+                    .option("password", password)
                     .option("driver", "org.postgresql.Driver")
                     .load()
                     .repartition(1)
@@ -52,7 +55,7 @@ val visits = spark
             .read
             .format("org.elasticsearch.spark.sql")
             .option("es.nodes.wan.only","true")
-            .option("es.nodes", "10.0.5.13")
+            .option("es.nodes", "10.0.1.9")
             .option("es.port", "9200")
             .load("visits")
             .repartition(1)
@@ -92,7 +95,7 @@ val visits_cl = clients_ages.as("a")
                     .select($"a.uid"
                             ,$"a.gender"
                             ,$"a.age_category"
-                            ,concat(lit("web_"), lower(regexp_replace($"b.category", "-", "_"))).as("web_category")
+                            ,concat(lit("shop_"), lower(regexp_replace($"b.category", "-", "_"))).as("web_category")
                             ,$"b.timestamp")
                     .filter(!$"web_category".isNull)
                     .cache()
@@ -105,7 +108,7 @@ val visits_web =
         .pivot("web_category")
         .count()
         
-visits_web.show(1, 100, true)
+visits_web.filter($"uid" === "d50192e5-c44e-4ae8-ae7a-7cfe67c8b777").show(1, 100, true)
 
 val weblogs_explode = weblogs
                             .select($"uid"
@@ -142,27 +145,19 @@ val weblogs_cl_cat = weblogs_cl.as("a")
                                 ,$"a.host"
                                 ,regexp_replace($"a.host", "www.", "").as("host_not_www")
                                 ,$"a.timestamp"
-                                ,concat(lit("shop_"), lower(regexp_replace($"b.category", "-", "_"))).as("shop_category"))
-                        .filter(!$"shop_category".isNull)
+                                ,concat(lit("web_"), lower(regexp_replace($"b.category", "-", "_"))).as("shop_category"))
+                                .filter(!$"shop_category".isNull)
                         .cache()
 
-weblogs_cl_cat.show(5, false)
-
-// // check join web category
-
-// weblogs_cl_cat.filter($"category".isNull).select($"host").distinct().show(1, false)
-
-// domain_cats.registerTempTable("domain_cats_tbl")
-
-// sqlContext.sql("""select * from domain_cats_tbl where lower(domain) like '%velomotion.ru%'""").show(100)
+weblogs_cl_cat.show(1, false)
 
 val weblogs_web = 
     weblogs_cl_cat
         .groupBy("uid")
         .pivot("shop_category")
-        .count()
+        .agg(count('host_not_www))
 
-weblogs_web.show(1, 100, true)
+//weblogs_web.show(1, 100, true)
 
 clients_ages.select($"uid").distinct().count() == clients_ages.count()
 
@@ -182,36 +177,20 @@ res.show(1, 1000, true)
 
 res.count()
 
-res.filter($"uid" === "d50e23dc-0cbd-4883-bd6c-23ce65b511cc").show(3, 1000, true)
-
 res
     .write
+    .mode("overwrite")
     .format("jdbc")
-    .option("url", "jdbc:postgresql://10.0.5.13:5432/kirill_likhouzov")
+    .option("url", s"jdbc:postgresql://10.0.1.9:5432/$username")
     .option("dbtable", "clients")
-    .option("user", "kirill_likhouzov")
-    .option("password", "kCh1wyOM")
+    .option("user", username)
+    .option("password", password)
     .option("driver", "org.postgresql.Driver")
     .save()
 
+//check
+res.filter($"uid" === "d50192e5-c44e-4ae8-ae7a-7cfe67c8b777").show(3, 1000, true)
+
 sc.stop()
 
-/* 
-spark-shell --driver-class-path /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar --jars /data/home/kirill.likhouzov/Drivers/postgresql-42.2.12.jar
-
-val jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://10.0.5.13:5432/labdata").option("dbtable", "domain_cats").option("user", "kirill_likhouzov").option("password", "kCh1wyOM").load()
-
-jdbcDF.write.format("orc").save("domain_cats.orc")
-
-val domain_cats = sqlContext.read.format("orc").load("/user/kirill.likhouzov/domain_cats.orc")
-/*
-
-/*
-spark-shell --driver-class-path /data/home/kirill.likhouzov/Drivers/elasticsearch-spark-20_2.11-7.6.2.jar --jars /data/home/kirill.likhouzov/Drivers/elasticsearch-spark-20_2.11-7.6.2.jar
-
-val visits = spark.read.format("org.elasticsearch.spark.sql").option("es.nodes.wan.only","true").option("es.nodes", "10.0.5.13").option("es.port", "9200").load("visits")
-
-visits.write.format("orc").save("visits.orc")
-
-val visits = sqlContext.read.format("orc").load("/user/kirill.likhouzov/visits.orc")
-*/
+//GRANT SELECT ON TABLE clients TO PUBLIC;
