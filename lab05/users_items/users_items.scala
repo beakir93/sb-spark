@@ -9,6 +9,8 @@ object users_items {
 
     import java.text.SimpleDateFormat
     import java.util.{Calendar, Date}
+
+    import org.apache.spark.sql.DataFrame
     //Create a SparkContext to initialize Spark
     val conf = new SparkConf()
       .setAppName("lab05")
@@ -107,7 +109,7 @@ object users_items {
       users_items_old.show(3)
                     //TODO: заменить хардкод даты пути на чтение папок из hdfs
 
-      df_union = union_df_diff_col(df_pvt, users_items_old)
+      val df_union = union_df_diff_col(df_pvt, users_items_old)
       df_union
               .na.fill(0)
               .write
