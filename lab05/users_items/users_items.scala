@@ -34,14 +34,14 @@ object users_items {
     System.out.println(s"output_dtr: $output_dir")
     System.out.println(s"input_dir: $input_dir")
 
-//    val fs = FileSystem.get(sc.hadoopConfiguration)
-//    val outPutPath = new Path(s"$output_dir_prefix/")
-//      if (fs.exists(outPutPath))
-//          fs.delete(outPutPath, true)
-//  System.out.println("Dropped table".toUpperCase)
+    //    val fs = FileSystem.get(sc.hadoopConfiguration)
+    //    val outPutPath = new Path(s"$output_dir_prefix/")
+    //      if (fs.exists(outPutPath))
+    //          fs.delete(outPutPath, true)
+    //  System.out.println("Dropped table".toUpperCase)
 
-//    val today = new SimpleDateFormat("yMMdd").format(Calendar.getInstance().getTime())
-//    System.out.println("Today date: " + today)
+    //    val today = new SimpleDateFormat("yMMdd").format(Calendar.getInstance().getTime())
+    //    System.out.println("Today date: " + today)
 
     def union_df_diff_col (df1: DataFrame, df2: DataFrame) = {
 
@@ -68,38 +68,32 @@ object users_items {
     /****************************************************************************************/
 
     val df_buy= sparkSession
-                    .read
-                    .json(s"$input_dir/buy")
-
-    System.out.println("df_buy")
-    df_buy.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
+      .read
+      .json(s"$input_dir/buy")
 
     val df_view= sparkSession
-                    .read
-                    .json(s"$input_dir/view")
-
-    System.out.println("df_view")
-    df_view.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
+      .read
+      .json(s"$input_dir/view")
 
     val df_buy_view= df_buy
-                    .union(df_view)
+      .union(df_view)
     df_buy_view.count
 
     val dt_max_arr= df_buy_view
-                    .agg(max(col("date")))
-                    .collect
-                    .map(x => x(0))
+      .agg(max(col("date")))
+      .collect
+      .map(x => x(0))
     val dt_max = dt_max_arr(0)
     System.out.println("dt_max: " + dt_max)
 
     val df_pvt= df_buy_view
-        .withColumn("item_type", when(col("event_type") === "buy",
-          concat(lit("buy_"), lower(regexp_replace(regexp_replace(col("item_id"), "-", "_"), " ", "_"))))
-          .otherwise(concat(lit("view_"), lower(regexp_replace(regexp_replace(col("item_id"), "-", "_"), " ", "_")))))
-        .groupBy("uid")
-        .pivot("item_type")
-        .count
-        .repartition(1)
+      .withColumn("item_type", when(col("event_type") === "buy",
+        concat(lit("buy_"), lower(regexp_replace(regexp_replace(col("item_id"), "-", "_"), " ", "_"))))
+        .otherwise(concat(lit("view_"), lower(regexp_replace(regexp_replace(col("item_id"), "-", "_"), " ", "_")))))
+      .groupBy("uid")
+      .pivot("item_type")
+      .count
+      .repartition(1)
 
     //df_pvt.show(3)
 
@@ -109,18 +103,18 @@ object users_items {
       System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items".!!)
 
       val users_items_old = sparkSession
-                    .read
-                    .parquet(s"$output_dir/20200429")
+        .read
+        .parquet(s"$output_dir/20200429")
 
       //users_items_old.show(3)
-                    //TODO: заменить хардкод даты пути на чтение папок из hdfs
+      //TODO: заменить хардкод даты пути на чтение папок из hdfs
 
       val df_union = union_df_diff_col(df_pvt, users_items_old)
       df_union
-              .na.fill(0)
-              .write
-              .mode("overwrite")
-              .parquet(s"$output_dir/$dt_max")
+        .na.fill(0)
+        .write
+        .mode("overwrite")
+        .parquet(s"$output_dir/$dt_max")
     }
     else {
       df_pvt
