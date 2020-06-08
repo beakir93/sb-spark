@@ -84,6 +84,9 @@ object users_items {
 
     val df_buy_view= df_buy
       .union(df_view)
+
+    System.out.println("df_buy_view")
+    df_buy_view.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
     df_buy_view.count
 
     val dt_max_arr= df_buy_view
@@ -102,7 +105,9 @@ object users_items {
       .count
       .repartition(1)
 
-    //df_pvt.show(3)
+    System.out.println("df_pvt")
+    df_pvt.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
+
 
     if (update_mode.toInt == 1) {
       System.out.println("update_mode == 1")
@@ -113,10 +118,14 @@ object users_items {
         .read
         .parquet(s"$output_dir/20200429")
 
-      //users_items_old.show(3)
+      System.out.println("users_items_old")
+      users_items_old.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
       //TODO: заменить хардкод даты пути на чтение папок из hdfs
 
       val df_union = union_df_diff_col(df_pvt, users_items_old)
+      System.out.println("df_union")
+      df_union.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
+
       df_union
         .na.fill(0)
         .write
