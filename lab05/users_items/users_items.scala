@@ -41,7 +41,25 @@ object users_items {
 //    val today = new SimpleDateFormat("yMMdd").format(Calendar.getInstance().getTime())
 //    System.out.println("Today date: " + today)
 
+    def union_df_diff_col (df1: DataFrame, df2: DataFrame) = {
 
+      def col_null (df1:DataFrame, df2:DataFrame) = {
+        var df_tmp :DataFrame = df2
+        for (col <- df1.columns) {
+          if (!df_tmp.columns.contains(col)) {
+            //println(col)
+            df_tmp = df_tmp.withColumn(col, lit(null))
+          }
+        }
+        df_tmp
+      }
+
+      val df_1_tmp = col_null(df1, df2)
+      val df_2_tmp = col_null(df2, df1)
+
+      val df_res = df_1_tmp.union(df_2_tmp)
+      df_res
+    }
 
     /****************************************************************************************/
     /*                                     logics                                           */
@@ -81,7 +99,6 @@ object users_items {
       System.out.println("update_mode == 1")
       System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/".!!)
       System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items".!!)
-      System.out.println("hdfs dfs -ls file:///data/home/labchecker2/checkers/logs/sb1laba05/kirill.likhouzov/users-items/20200429".!!)
 
       val users_items_old = sparkSession
                     .read
@@ -89,12 +106,13 @@ object users_items {
 
       users_items_old.show(3)
                     //TODO: заменить хардкод даты пути на чтение папок из hdfs
-      df_pvt
-                    .union(users_items_old)
-                    .na.fill(0)
-                    .write
-                    .mode("overwrite")
-                    .parquet(s"$output_dir/$dt_max")
+
+      df_union = union_df_diff_col(df_pvt, users_items_old)
+      df_union
+              .na.fill(0)
+              .write
+              .mode("overwrite")
+              .parquet(s"$output_dir/$dt_max")
     }
     else {
       df_pvt
