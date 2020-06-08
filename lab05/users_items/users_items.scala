@@ -59,7 +59,7 @@ object users_items {
       val df_1_tmp = col_null(df1, df2)
       val df_2_tmp = col_null(df2, df1)
 
-      val df_res = df_1_tmp.union(df_2_tmp)
+      val df_res = df_1_tmp.unionByName(df_2_tmp)
       df_res
     }
 
@@ -122,7 +122,7 @@ object users_items {
       users_items_old.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
       //TODO: заменить хардкод даты пути на чтение папок из hdfs
 
-      val df_union = union_df_diff_col(df_pvt, users_items_old)
+      val df_union = union_df_diff_col(users_items_old, df_pvt)
       System.out.println("df_union")
       df_union.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
 
