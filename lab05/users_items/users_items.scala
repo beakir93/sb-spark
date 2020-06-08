@@ -31,7 +31,7 @@ object users_items {
     val input_dir = sc.getConf.get("spark.users_items.input_dir")
 
     println(s"update_mode: " + update_mode)
-    System.out.println(s"output_dtr: $output_dir".toUpperCase)
+    System.out.println(s"output_dtr: $output_dir")
     System.out.println(s"input_dir: $input_dir")
 
 //    val fs = FileSystem.get(sc.hadoopConfiguration)
