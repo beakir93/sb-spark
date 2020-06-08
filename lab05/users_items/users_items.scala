@@ -106,7 +106,7 @@ object users_items {
                     .read
                     .parquet(s"$output_dir/20200429")
 
-      users_items_old.show(3)
+      //users_items_old.show(3)
                     //TODO: заменить хардкод даты пути на чтение папок из hdfs
 
       val df_union = union_df_diff_col(df_pvt, users_items_old)
