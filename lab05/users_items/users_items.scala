@@ -40,7 +40,6 @@ object users_items {
         var df_tmp :DataFrame = df2
         for (col <- df1.columns) {
           if (!df_tmp.columns.contains(col)) {
-            //println(col)
             df_tmp = df_tmp.withColumn(col, lit(null))
           }
         }
