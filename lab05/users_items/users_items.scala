@@ -51,9 +51,15 @@ object users_items {
                     .read
                     .json(s"$input_dir/buy")
 
+    System.out.println("df_buy")
+    df_buy.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
+
     val df_view= sparkSession
                     .read
                     .json(s"$input_dir/view")
+
+    System.out.println("df_view")
+    df_view.filter(col("uid") === "8bb01460217f871cbe0ae8fa1ceac2cc").show(3, 1000, true)
 
     val df_buy_view= df_buy
                     .union(df_view)
