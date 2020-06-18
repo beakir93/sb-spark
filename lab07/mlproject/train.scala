@@ -5,6 +5,9 @@ object train {
     import org.apache.spark.sql.types._
     import org.apache.spark.sql.functions._
     import org.apache.hadoop.fs.{FileSystem, Path}
+    import org.apache.spark.ml.classification.LogisticRegression
+    import org.apache.spark.ml.feature.{CountVectorizer, StringIndexer, IndexToString}
+    import org.apache.spark.ml.{Pipeline, PipelineModel}
 
     //Create a SparkContext to initialize Spark
     val conf = new SparkConf()
@@ -23,16 +26,61 @@ object train {
     System.out.println(s"spark conf: $cnf")
     System.out.println("-----")
     System.out.println(cnf(0))
-    /*val topic_name = sc.getConf.get("spark.filter.topic_name")
-    var offset = sc.getConf.get("spark.filter.offset")
-    val output_dir_prefix = sc.getConf.get("spark.filter.output_dir_prefix")
 
-    println("topic_name: " + topic_name)
-    System.out.println(s"offset: $offset".toUpperCase)
-    System.out.println(s"output_dir_prefix: $output_dir_prefix")
-    System.out.println("Writing view table".toUpperCase)
+    /*val model_path = sc.getConf.get("spark.filter.model_path")
+
+    System.out.println(s"model_path: $model_path")
+    */
+
+    /*
+    val weblogs = sparkSession
+      .read
+      .json("hdfs:///labs/laba07/weblogs_train_merged_labels.json")
+      .repartition(1)
+
+    val weblogs_explode = weblogs
+      .select(col("uid")
+        ,col("gender_age")
+        ,explode(col("visits")).as("web"))
+      .cache()
+
+    val weblogs_url = weblogs_explode
+      .withColumn("url", weblogs_explode("web.url"))
+      .withColumn("timestamp", weblogs_explode("web.timestamp"))
+      .withColumn("host", callUDF("parse_url", col("url"), lit("HOST")))
+      .select(col("uid")
+        , col("gender_age")
+        , col("url")
+        , regexp_replace(col("host"), "www.", "").as("host_not_www")
+        , col("timestamp")
+        , from_unixtime(col("timestamp") / 1000).as("datetime")
+      )
+      .repartition(10)
+
+    val training = weblogs_url
+      .groupBy("uid", "gender_age")
+      .agg(collect_list("host_not_www").as("domains"))
+      .cache()
+
+    val cv = new CountVectorizer()
+      .setInputCol("domains")
+      .setOutputCol("features")
+
+    val indexer = new StringIndexer()
+      .setInputCol("gender_age")
+      .setOutputCol("label")
+
+    val lr = new LogisticRegression()
+      .setMaxIter(10)
+      .setRegParam(0.001)
+
+    val pipeline = new Pipeline()
+      .setStages(Array(cv, indexer, lr))
+
+    val model = pipeline.fit(training)
+
+    model.write.overwrite().save(model_path)
 */
     sc.stop()
-
   }
 }
