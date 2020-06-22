@@ -6,6 +6,7 @@ object features {
     import org.apache.spark.sql.functions._
     import sys.process._
     import org.apache.spark.sql.DataFrame
+    import org.apache.spark.sql.expressions.Window
     //Create a SparkContext to initialize Spark
     val conf = new SparkConf()
       .setAppName("lab06")
@@ -46,15 +47,8 @@ object features {
                                 .cache
 
     //CountVectorized
-    val weblogs_list_url = weblogs_url
-      .groupBy("uid")
-      .agg(collect_list("host_not_www").as("list_url"))
-      .cache()
-
-    val weblogs_res =
-      weblogs_feature_time
-        .join(weblogs_list_url, Seq("uid"), "left")
-        .repartition(100)
+    val vect_class = new vectorized
+    val weblogs_web = vect_class.transform(weblogs_url)
 
     val users_items = sparkSession
       .read
@@ -62,15 +56,18 @@ object features {
       .repartition(100)
       .cache
 
-    val res_t =
-      weblogs_res
+    val time_users_items =
+      weblogs_feature_time
         .join(broadcast(users_items), Seq("uid"), "left")
         .repartition(100)
         .cache
 
-
-    val vect_class = new vectorized
-    val res = vect_class.transform(res_t)
+    val res =
+      time_users_items
+        .join(weblogs_web, Seq("uid"), "left")
+        .na.fill(0)
+        .repartition(10)
+        .cache
 
     res.filter(col("uid") === "094b1e7e-97a6-4415-89f2-ca1eb72976b9").show(1, 1000, true)
 
