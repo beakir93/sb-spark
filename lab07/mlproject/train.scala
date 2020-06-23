@@ -5,7 +5,7 @@ object train {
     import org.apache.spark.sql.types._
     import org.apache.spark.sql.functions._
     import org.apache.hadoop.fs.{FileSystem, Path}
-    import org.apache.spark.ml.classification.LogisticRegression
+    import org.apache.spark.ml.classification.{LogisticRegression, DecisionTreeClassifier}
     import org.apache.spark.ml.feature.{CountVectorizer, StringIndexer, IndexToString}
     import org.apache.spark.ml.{Pipeline, PipelineModel}
 
@@ -21,18 +21,10 @@ object train {
     sc.setLogLevel("WARN")
 
     println("SparkContext started".toUpperCase)
-    val cnf = sc.getConf.getAll
 
-    System.out.println(s"spark conf: $cnf")
-    System.out.println("-----")
-    System.out.println(cnf(0))
-
-    /*val model_path = sc.getConf.get("spark.filter.model_path")
-
+    val model_path = sc.getConf.get("spark.filter.model_path")
     System.out.println(s"model_path: $model_path")
-    */
 
-    /*
     val weblogs = sparkSession
       .read
       .json("hdfs:///labs/laba07/weblogs_train_merged_labels.json")
@@ -65,22 +57,35 @@ object train {
     val cv = new CountVectorizer()
       .setInputCol("domains")
       .setOutputCol("features")
+      .fit(training)
 
     val indexer = new StringIndexer()
       .setInputCol("gender_age")
       .setOutputCol("label")
+      .fit(training)
 
+    val dt = new DecisionTreeClassifier()
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+
+    /*
     val lr = new LogisticRegression()
       .setMaxIter(10)
       .setRegParam(0.001)
+     */
+
+    val ind_to_str = new IndexToString()
+      .setInputCol("prediction")
+      .setOutputCol("gender_age_pred")
+      .setLabels(indexer.labels)
 
     val pipeline = new Pipeline()
-      .setStages(Array(cv, indexer, lr))
+      .setStages(Array(cv, indexer, dt, ind_to_str))
 
     val model = pipeline.fit(training)
 
     model.write.overwrite().save(model_path)
-*/
+
     sc.stop()
   }
 }

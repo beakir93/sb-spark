@@ -27,17 +27,17 @@ object test {
     sc.setLogLevel("WARN")
 
     println("SparkContext started".toUpperCase)
-    val cnf = sc.getConf.getAll
 
-    System.out.println(s"spark conf: $cnf")
-    System.out.println("-----")
-    System.out.println(cnf(0))
-
-    /*val model_path = sc.getConf.get("spark.filter.model_path")
+    val model_path = sc.getConf.get("spark.filter.model_path")
 
     System.out.println(s"model_path: $model_path")
-    */
-  /*
+
+    val fs = FileSystem.get(sc.hadoopConfiguration)
+    val checkPointPath = "/user/kirill.likhouzov/laba04b/checkpoint"
+    val checkPointPth = new Path(checkPointPath)
+    if (fs.exists(checkPointPth))
+      fs.delete(checkPointPth, true)
+
     val schema =
       StructType(
         Seq(
@@ -61,7 +61,7 @@ object test {
       .format("kafka")
       .option("kafka.bootstrap.servers", "10.0.1.13:6667")
       .option("subscribe", "kirill_likhouzov")
-      .option("consumer_timeout_ms", 30000)
+      .option("consumer_timeout_ms", 50000)
       .load()
       .select(from_json(col("value").cast("string"), schema).as("value"))
       .select("value.*")
@@ -84,18 +84,7 @@ object test {
     val df_out = model.transform(test)
 
     df_out
-      .withColumn("gender_age", when(col("prediction") === 6, "M:45-54")
-        .when(col("prediction") === 4, "F:18-24")
-        .when(col("prediction") === 9, "M:>=55")
-        .when(col("prediction") === 7, "M:18-24")
-        .when(col("prediction") === 1, "F:25-34")
-        .when(col("prediction") === 8, "F:>=55")
-        .when(col("prediction") === 5, "F:45-54")
-        .when(col("prediction") === 2, "M:35-44")
-        .when(col("prediction") === 3, "F:35-44")
-        .when(col("prediction") === 0, "M:25-34")
-        .otherwise(""))
-      .select(col("uid"), col("gender_age"))
+      .select($"uid", $"gender_age_pred".as("gender_age"))
       .toJSON
       .writeStream
     .format("kafka")
@@ -104,7 +93,7 @@ object test {
     .option("topic", "kirill_likhouzov_lab04b_out")
     .option("checkpointLocation", "/user/kirill.likhouzov/laba04b/checkpoint")
     .start
-*/
+
     sc.stop()
   }
 }
